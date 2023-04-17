@@ -2,6 +2,9 @@
 #include "vexMotor.h"
 #include "ultrasonico.h"
 #include "pir.h"
+#include "SensorInfrarojo.h"
+#include "Sonido.h"
+
 
 //declarar sensores
 
