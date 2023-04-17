@@ -1,6 +1,10 @@
 #include <SoftwareSerial.h>
 #include "SensorInfrarojo.h"
 #include "Sonido.h"
+#include "voltaje.h"
+#include "vexMotor.h"
+#include "ultrasonico.h"
+#include "pir.h"
 
 
 SoftwareSerial HM10(2, 3); // RX, TX
