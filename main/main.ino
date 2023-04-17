@@ -3,13 +3,17 @@
 #include "ultrasonico.h"
 #include "pir.h"
 
-Voltaje bat1(0);
-Voltaje bat2(1);
+//declarar sensores
+
+
+//declarar motores
+vexMotor izq(2);
+vexMotor der(3);
 
 void setup(){
-  bat1.setup();
-  bat2.setup();
-    Serial.begin(9600);
+  izq.setup();
+  der.setup();
+  Serial.begin(9600);
 }
 
 void loop(){

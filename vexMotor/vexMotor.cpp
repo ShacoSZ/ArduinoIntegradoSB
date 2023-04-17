@@ -20,4 +20,3 @@ void vexMotor::setSpeed(int speed) {
   digitalWrite(pinPWM + 1, pwmValue < 0 ? HIGH : LOW);
 }
 
-// Path: main\motor\motor.cpp
