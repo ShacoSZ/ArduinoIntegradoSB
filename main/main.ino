@@ -1,4 +1,7 @@
 #include "voltaje.h"
+#include "vexMotor.h"
+#include "ultrasonico.h"
+#include "pir.h"
 
 Voltaje bat1(0);
 Voltaje bat2(1);
