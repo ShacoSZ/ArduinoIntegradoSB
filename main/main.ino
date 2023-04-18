@@ -5,10 +5,11 @@
 #include "vexMotor.h"
 #include "ultrasonico.h"
 #include "pir.h"
+#include "voltajesensor.h"
 
 
 SoftwareSerial HM10(2, 3); // RX, TX
-int sensor1, sensor2, sensor3, carritoX, carritoY;
+int carritoX, carritoY;
 
 void setup() {
   Serial.begin(9600);
