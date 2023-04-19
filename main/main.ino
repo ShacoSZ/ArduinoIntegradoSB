@@ -3,10 +3,44 @@
 #include "Sonido.h"
 #include "voltaje.h"
 #include "vexMotor.h"
-#include "ultrasonico.h"
+#include "Distancia.h"
 #include "pir.h"
 #include "voltajesensor.h"
 
+/************** Ultrasonico **************/
+  Distancia us1 = Distancia(5, 6, 0);
+
+  const int numeroUS = 1; 
+  Distancia sensores_sonicos[] = {us1};
+  float val_sensores_sonicos[numeroUS];
+  
+/************* Sensor Sonido **************/
+  Sonido sound1 = Sonido(9,0);
+
+  const int numero_sound = 1;
+  Sonido sensores_sonido[] = {sound1};
+  float val_sensores_sonido[numero_sound];
+
+/************* Sensor Infrarojo **************/
+  SensorInfrarojo infrarojo1 = SensorInfrarojo(10,0);
+
+  const int numero_infrarojo = 1;
+  SensorInfrarojo sensores_infrarojo[] = {infrarojo1};
+  float val_sensores_infrarojo[numero_infrarojo];
+
+/************* Sensor PIR *************/
+  Pir mov1 = Pir(2, 0);
+
+  const int numeroMov = 1;
+  Pir sensores_mov[] = {mov1};
+  float val_sensores_mov[numeroMov];
+
+/************ Voltaje_Sensor ****************/  
+  voltajesensor volt1 = voltajesensor(11,0)
+
+  const int numero_volt = 1;
+  voltajesensor sensores_volt[] = {volt1};
+  float val_sensor_volt[numero_volt];
 
 SoftwareSerial HM10(2, 3); // RX, TX
 int carritoX, carritoY;
@@ -17,6 +51,7 @@ void setup() {
 }
 
 void loop() {
+  int i = 0;
   // Leer datos del módulo Maestro
   if (HM10.available()) {
     String maestroData = HM10.readString();
@@ -37,14 +72,20 @@ void loop() {
 
 
     //Logica de sensores
-
-
+ 
+    val_sensor_volt+= "volt: " + String(sensores_volt[i].read(););
+    val_sensores_sonido += "Sonido: " + String(sensores_sonido[i].read(););
+    val_sensores_mov += "PIR: " + String(sensores_mov[i].read(););
+    val_sensores_sonicos += "Distancia Ultrasonico: " + String(sensores_sonicos[i].read(););
+    val_sensores_infrarojo += "Infrarojo: " + String(sensores_infrarojo[i].read(););
+    
     //Envio de datos
     //Sensores, cambiar por datos necesarios
     String carritoData = "S:" + String(sensor1) + "," + String(sensor2) + "," + String(sensor3) + ",";
     //Ubicacion del carrito
     carritoData += "P:" + String(x) + "," + String(y) + "\n";
     HM10.print(carritoData);
+    i+=1;
   }
 }
 
