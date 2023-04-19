@@ -17,6 +17,5 @@ void vexMotor::setSpeed(int speed) {
 
   int pwmValue = map(speed, -100, 100, -255, 255);
   analogWrite(pinPWM, abs(pwmValue));
-  digitalWrite(pinPWM + 1, pwmValue < 0 ? HIGH : LOW);
 }
 
