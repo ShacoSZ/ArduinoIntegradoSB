@@ -1,6 +1,9 @@
 #include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 
-int i=0;
+StaticJsonDocument<200> doc;
+JsonArray palabras = doc.to<JsonArray>();
+
 void setup()
 {
     Serial.begin(9600);
@@ -16,11 +19,17 @@ void loop()
     String dato = "CM"; 
     String pines = String(echoPin) + " y " + String(triggerPin);
 
-    String dict = "";
+    JsonObject Sensao = palabras.createNestedObject();
 
-     dict = "Clave: " + String(clave) + ", " + "Tipo: " + String(tipo) + ", " 
-    + "valores: " + String(valores) + ", "+ "Dato: " + String(dato) + ", " + "Pines: " + String(pines);
+    Sensao["Clave: "] = clave;
+    Sensao["Tipo: "] = tipo;
+    Sensao["Valores: "] = valores;
+    Sensao["Dato: "] = dato;
+    Sensao["Pines: "] = pines;
 
-    Serial.println(dict);
-    delay(5000);
+    char jsonBuffer[512];
+    serializeJson(doc,jsonBuffer,sizeof(jsonBuffer));
+
+    Serial.println(jsonBuffer);
+    delay(1000);
 }
