@@ -1,4 +1,5 @@
 #include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 #include "SensorInfrarojo.h"
 #include "Sonido.h"
 #include "voltaje.h"
@@ -6,44 +7,54 @@
 #include "Distancia.h"
 #include "pir.h"
 #include "voltajesensor.h"
+#include "temperatura.h"
+#include "Gas.h"
 
-/************** Ultrasonico **************/
-  Distancia us1 = Distancia(5, 6, 0);
+/************* Sensor Gas ***************/
+  Sens_Gas gas0 = Sens_Gas(10,0);
+  const int numero_temp = 1;
 
-  const int numeroUS = 1; 
-  Distancia sensores_sonicos[] = {us1};
-  float val_sensores_sonicos[numeroUS];
-  
+/************* Sensor Temperatura ***************/
+  Temperatura temp = Temperatura(9,0);
+  const int numero_temp = 1;
+
 /************* Sensor Sonido **************/
-  Sonido sound1 = Sonido(9,0);
-
+  Sonido sound1 = Sonido(6,0);
   const int numero_sound = 1;
-  Sonido sensores_sonido[] = {sound1};
-  float val_sensores_sonido[numero_sound];
 
-/************* Sensor Infrarojo **************/
-  SensorInfrarojo infrarojo1 = SensorInfrarojo(10,0);
-
+/************* Sensor Infrarojo IZQ **************/
+  SensorInfrarojo infrarojo1 = SensorInfrarojo(7,0);
   const int numero_infrarojo = 1;
-  SensorInfrarojo sensores_infrarojo[] = {infrarojo1};
-  float val_sensores_infrarojo[numero_infrarojo];
 
-/************* Sensor PIR *************/
-  Pir mov1 = Pir(2, 0);
+/************* Sensor Infrarojo DRCH **************/
+  SensorInfrarojo infrarojo2 = SensorInfrarojo(8,0);
+  const int numero_infrarojo = 1;
 
-  const int numeroMov = 1;
-  Pir sensores_mov[] = {mov1};
-  float val_sensores_mov[numeroMov];
+/************* Sensor PIR Frontal *************/
+  Pir mov1 = Pir(4, 0);
+  const int numeroMov1 = 1;
+
+  /************* Sensor PIR Trasero *************/
+  Pir mov2 = Pir(2, 0);
+  const int numeroMov2 = 1;
 
 /************ Voltaje_Sensor ****************/  
   voltajesensor volt1 = voltajesensor(11,0)
-
   const int numero_volt = 1;
-  voltajesensor sensores_volt[] = {volt1};
-  float val_sensor_volt[numero_volt];
+
+/************** Ultrasonico **************/
+  Distancia us1 = Distancia(5, 6, 0);
+  const int numeroUS = 1; 
+
+/************** Ultrasonico **************/
+  Distancia us2 = Distancia(5, 6, 0);
+  const int numeroUS = 1;   
 
 SoftwareSerial HM10(2, 3); // RX, TX
 int carritoX, carritoY;
+
+StaticJsonDocument<200> doc;
+JsonArray sensores = doc.to<JsonArray>();
 
 void setup() {
   Serial.begin(9600);
@@ -72,13 +83,54 @@ void loop() {
 
 
     //Logica de sensores
- 
-    val_sensor_volt+= "volt: " + String(sensores_volt[i].read(););
-    val_sensores_sonido += "Sonido: " + String(sensores_sonido[i].read(););
-    val_sensores_mov += "PIR: " + String(sensores_mov[i].read(););
-    val_sensores_sonicos += "Distancia Ultrasonico: " + String(sensores_sonicos[i].read(););
-    val_sensores_infrarojo += "Infrarojo: " + String(sensores_infrarojo[i].read(););
-    
+    //JsonObject ultrasonico1 = sensores.createNestedObject();
+    //ultrasonico1["clave"] = "ult0"
+    //ultrasonico1["dato"] = 
+    //JsonObject ultrasonico2 = sensores.createNestedObject();
+    //ultrasonico2["clave"] = "ult1"
+
+    JsonObject sonido = sensores.createNestedObject();
+    sonido["clave"] = "son0";
+    sonido["dato"] = sound1.read();
+
+    JsonObject temperaturasao = sensores.createNestedObject();
+    temperaturasao["clave"] = "tem0";
+    temperaturasao["dato"] = temp.readTEMP();
+
+    JsonObject humedadsao = sensores.createNestedObject();
+    humedadsao["clave"] = "hum0";
+    humedadsao["dato"] = hum.readHUM();
+
+    //JsonObject bateria1 = sensores.createNestedObject();
+    //bateria1["clave"] = "bat0"
+
+    //JsonObject bateria2 = sensores.createNestedObject();
+    //bateria2["clave"] = "bat1"
+
+    JsonObject PIR01 = sensores.createNestedObject();
+    PIR01["clave"] = "pir0";
+    PIR01["dato"] = mov1.read();
+
+    JsonObject PIR02 = sensores.createNestedObject();
+    PIR02["clave"] = "pir1";
+    PIR02["dato"] = mov2.read();
+
+    JsonObject infrarojo01 = sensores.createNestedObject();
+    infrarojo01["clave"] = "ifr0";
+    infrarojo01["dato"] = infrarojo1.read();
+
+    JsonObject infrarojo02 = sensores.createNestedObject();
+    infrarojo02["clave"] = "ifr1";
+    infrarojo02["dato"] = infrarojo2.read();
+
+    JsonObject Sensor_Gas0 = sensores.createNestedObject();
+    Sensor_Gas0["clave"] = "gas0";
+    Sensor_Gas0["dato"] = gas0.read();
+
+    char jsonBuffer[512];
+    serializeJson(doc,jsonBuffer,sizeof(jsonBuffer));
+    Serial.println(jsonBuffer);
+
     //Envio de datos
     //Sensores, cambiar por datos necesarios
     String carritoData = "S:" + String(sensor1) + "," + String(sensor2) + "," + String(sensor3) + ",";

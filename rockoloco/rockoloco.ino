@@ -21,11 +21,11 @@ void loop()
 
     JsonObject Sensao = palabras.createNestedObject();
 
-    Sensao["Clave: "] = clave;
-    Sensao["Tipo: "] = tipo;
-    Sensao["Valores: "] = valores;
-    Sensao["Dato: "] = dato;
-    Sensao["Pines: "] = pines;
+    Sensao["clave"] = clave;
+    Sensao["tipo"] = tipo;
+    Sensao["valores"] = valores;
+    Sensao["dato"] = dato;
+    Sensao["pines"] = pines;
 
     char jsonBuffer[512];
     serializeJson(doc,jsonBuffer,sizeof(jsonBuffer));
