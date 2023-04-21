@@ -12,6 +12,7 @@ class Sonido
   private:
     int pin;
     bool valor;
+    int numero;
     int respuesta;
 };
 #endif

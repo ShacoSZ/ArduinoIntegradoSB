@@ -11,6 +11,7 @@ class SensorInfrarojo
     void show();
   private:
     int pin;
+    int numero;
     bool valor;
     int respuesta;
 };

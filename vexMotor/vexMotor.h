@@ -10,3 +10,4 @@ class vexMotor {
     vexMotor(int pinPWM);
     void setSpeed(int speed);
 };
+
