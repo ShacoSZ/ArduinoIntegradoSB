@@ -47,7 +47,7 @@
   Distancia us2 = Distancia(24, 25, 0);
   const int numeroUS2 = 1;   
 
-SoftwareSerial HM10(2, 3); // RX, TX
+SoftwareSerial BTSerial(11, 10); // RX, TX
 int carritoX, carritoY;
 
 StaticJsonDocument<200> doc;
