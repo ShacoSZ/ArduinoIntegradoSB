@@ -15,13 +15,11 @@ int SensorInfrarojo::read()
   if (value == HIGH) 
   { 
     int respuesta = 1;           
-    Serial.println("Obstaculo Detectado");
     return respuesta;
   }
   else
   {
     int respuesta = 0;           
-    Serial.println("No se ha detectado ningun obstaculo");
     return respuesta;    
   }
   delay(1000);

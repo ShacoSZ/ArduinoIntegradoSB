@@ -14,13 +14,11 @@ int Sens_Gas::read()
   if (valor) 
   { 
     respuesta = 1;           
-    Serial.println("GAS/ALCOHOL DETECTADO");
     return respuesta;
   }
   else
   {
     respuesta = 0;           
-    Serial.println("GAS/ALCOHOL NO DETECTADO");
     return respuesta;    
   }
   delay(1000);
