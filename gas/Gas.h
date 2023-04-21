@@ -17,3 +17,4 @@ int numero;
 bool valor;
 int respuesta;
 };
+#endif

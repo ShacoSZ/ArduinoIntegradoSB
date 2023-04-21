@@ -2,21 +2,23 @@
 #define TEMPERATURA_H
 
 #include <Arduino.h>
+#include <DHT.h>  // Incluimos la librería DHT.h
 
 class Temperatura
 {
 public:
-Distancia(int _pin,int numero);
-void setup();
-int readTEMP();
-int readHUM();
-void show();
+    Temperatura(int _pin, int _numero);
+    void setup();
+    int readTEMP();
+    int readHUM();
+    void show();
 
 private:
-int pin;
-int numero;
-float temperatura;
-float humedad;
+    int pin;
+    int numero;
+    float temperatura;
+    float humedad;
+    DHT temp;  // Declaramos la variable temp como miembro de la clase Temperatura
 };
 
 #endif

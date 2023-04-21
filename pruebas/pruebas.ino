@@ -13,8 +13,9 @@ void setup() {
 }
 
 void loop() {
-  int joyX = analogRead(A0);
+int joyX = analogRead(A0);
 int joyY = analogRead(A1);
+
 Serial.print("x: ");
 Serial.println(joyX);
 Serial.print("y: ");

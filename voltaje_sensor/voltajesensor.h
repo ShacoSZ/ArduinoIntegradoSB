@@ -11,6 +11,7 @@ class voltajesensor
     void show();
   private:
     int pin;
+    int numero;
     int valor;
 };
 #endif

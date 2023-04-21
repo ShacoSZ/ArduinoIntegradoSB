@@ -1,4 +1,4 @@
-#include "SensorInfrarojo.h"
+#include "Sonido.h"
 
 Sonido::Sonido(int _pin, int _numero)
 {
@@ -9,7 +9,7 @@ Sonido::Sonido(int _pin, int _numero)
 
 int Sonido::read()
 {
-  bool  valor =  digitalRead(sensor) ; //leemos el estado del sensor
+  bool  valor =  digitalRead(pin) ; //leemos el estado del sensor
   if ( valor == true ) //Si está activada la salida D0
   {
     Serial.println("Hay ruido");

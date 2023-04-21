@@ -2,14 +2,14 @@
 
 Sens_Gas::Sens_Gas(int _pin, int _numero)
 {
-  pinMode(_pin, INPUT);
   pin = _pin;
+  pinMode(pin, INPUT);
   numero = _numero;
 }
 
 int Sens_Gas::read()
 {
-  valor = digitalRead(sensorPin );  //lectura digital de pin
+  valor = digitalRead(pin);  //lectura digital de pin
  
   if (valor) 
   { 

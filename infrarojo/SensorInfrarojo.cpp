@@ -1,4 +1,4 @@
-#include "Sonido.h"
+#include "SensorInfrarojo.h"
 
 SensorInfrarojo::SensorInfrarojo(int _pin, int _numero)
 {
@@ -10,7 +10,7 @@ SensorInfrarojo::SensorInfrarojo(int _pin, int _numero)
 int SensorInfrarojo::read()
 {
   int value = 0;
-  value = digitalRead(sensorPin );  //lectura digital de pin
+  value = digitalRead(pin);  //lectura digital de pin
  
   if (value == HIGH) 
   { 

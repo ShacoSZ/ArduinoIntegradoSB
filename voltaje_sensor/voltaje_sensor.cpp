@@ -1,9 +1,9 @@
-#include "voltajesensor.h""
+#include "voltajesensor.h"
 
 voltajesensor::voltajesensor(int _pin, int _numero)
 {
-  #define ANALOG_IN_PIN _pin;
   pin = _pin;
+  #define ANALOG_IN_PIN pin
   numero = _numero;
 }
 
@@ -23,7 +23,7 @@ int voltajesensor::read()
    
     adc_voltage  = (adc_value * ref_voltage) / 1024.0; 
     
-    in_voltage = adc_voltage / (R2/(R1+R2)) ; 
+    in_voltage = adc_voltage / (R2/(R1+R2)); 
     
     valor = in_voltage;
     return valor;
