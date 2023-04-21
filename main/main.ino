@@ -56,102 +56,115 @@ vexMotor motorLeft(3); // pinPWM del motor izquierdo
 vexMotor motorRight(5); // pinPWM del motor derecho
 
 void setup() {
+  BTSerial.flush();
+  delay(500);
+  BTSerial.begin(38400); 
   Serial.begin(9600);
+  Serial.println("Iniciando ... ");
+  BTSerial.print("AT\r\n");
+  delay(100);
+
   //HM10.begin(9600);
   motorLeft.setup();
   motorRight.setup();
 }
 
 void loop() {
-  // Leer datos del módulo Maestro
-    String maestroData = HM10.readString();
-    Serial.print("Datos del Maestro recibidos: ");
-    Serial.println(maestroData);
+    String receivedData = ""; // variable para almacenar la cadena recibida
+    int joyX, joyY; // variables para almacenar los valores de joyX y joyY
 
-    // Extraer las coordenadas del Maestro (X,Y)
-    int delimiterIndex = maestroData.indexOf(",");
-    carritoX = maestroData.substring(2, delimiterIndex).toInt();
-    carritoY = maestroData.substring(delimiterIndex + 1, maestroData.length() - 2).toInt();
+    if (BTSerial.available()) { // verifica si hay datos disponibles en la conexión Bluetooth
+      receivedData = BTSerial.readString(); // lee la cadena de caracteres enviada por el maestro
+      // extrae los valores de joyX y joyY de la cadena recibida
+      joyX = receivedData.substring(receivedData.indexOf(":")+1, receivedData.indexOf(",")).toInt();
+      joyY = receivedData.substring(receivedData.lastIndexOf(":")+1, receivedData.length()-1).toInt();
+    }
+    else{
+      joyX = 0;
+      joyY = 0;
+    }
+    //tiene que estar quieto el carrito para poder mandar los datos
+    if (joyX < 55 && joyX > 33 && joyY < 55 && joyY > 33){
+      //Logica de sensores
+      JsonObject ultrasonico1 = sensores.createNestedObject();
+      ultrasonico1["clave"] = "Ult0";
+      ultrasonico1["dato"] = us1.read();
+      
+      JsonObject ultrasonico2 = sensores.createNestedObject();
+      ultrasonico2["clave"] = "Ult1";
+      ultrasonico2["dato"] = us2.read();
 
-    // Realizar triangulación con las balizas
-    //float distancia1 = calcularDistancia(carritoX, carritoY, baliza1X, baliza1Y);
-    //float distancia2 = calcularDistancia(carritoX, carritoY, baliza2X, baliza2Y);
-    //float distancia3 = calcularDistancia(carritoX, carritoY, baliza3X, baliza3Y);
-    //float x = trilateracionX(distancia1, distancia2, distancia3, baliza1X, baliza2X, baliza3X);
-    //float y = trilateracionY(distancia1, distancia2, distancia3, baliza1Y, baliza2Y, baliza3Y);
+      JsonObject sonido = sensores.createNestedObject();
+      sonido["clave"] = "Son0";
+      sonido["dato"] = sound1.read();
 
+      JsonObject temperaturasao = sensores.createNestedObject();
+      temperaturasao["clave"] = "Tem0";
+      temperaturasao["dato"] = Temperatura(9,0);
 
-    //Logica de sensores
-    JsonObject ultrasonico1 = sensores.createNestedObject();
-    ultrasonico1["clave"] = "ult0";
-    ultrasonico1["dato"] = us1.read();
-    Serial.println(us1.read());
+      JsonObject humedadsao = sensores.createNestedObject();
+      humedadsao["clave"] = "Hum0";
+      humedadsao["dato"] = Humedad(9,0);
+
+      JsonObject bateria1 = sensores.createNestedObject();
+      bateria1["clave"] = "Bat0";
+      bateria1["dato"] = volt1.read();
+
+      JsonObject PIR01 = sensores.createNestedObject();
+      PIR01["clave"] = "Pir0";
+      PIR01["dato"] = mov1.read();
+
+      JsonObject PIR02 = sensores.createNestedObject();
+      PIR02["clave"] = "Pir1";
+      PIR02["dato"] = mov2.read();
+
+      JsonObject infrarojo01 = sensores.createNestedObject();
+      infrarojo01["clave"] = "Ifr0";
+      infrarojo01["dato"] = infrarojo1.read();
+
+      JsonObject infrarojo02 = sensores.createNestedObject();
+      infrarojo02["clave"] = "Ifr1";
+      infrarojo02["dato"] = infrarojo2.read();
+
+      JsonObject Sensor_Gas0 = sensores.createNestedObject();
+      Sensor_Gas0["clave"] = "Gas0";
+      Sensor_Gas0["dato"] = gas0.read();
+
+      char jsonBuffer[512];
+      serializeJson(doc,jsonBuffer,sizeof(jsonBuffer));
+      BTSerial.print(joystick); 
+    }
+    else{
+      infrarojo1.read();
+    infrarojo1.read();
+    if ((us1.read() < 10 && us2.read() < 10)||(infrarojo1.read() < 1 && infrarojo2.read() < 1))//se regresa poco
+    {
+      motorLeft.setSpeed(0);
+      motorRight.setSpeed(0);
+      delay(200);
+    }
+    else if (us1.read() < 10 || infrarojo1.read() == 1) //se regresa atras con el lado del sensor con mas potencia que el otro
+    {
+      motorLeft.setSpeed(0);
+      motorRight.setSpeed(0);
+      delay(200);
+
+    }
+    else if (us2.read() < 10 || infrarojo2.read() == 1) //gira al otor
+    {
+      motorLeft.setSpeed(0);
+      motorRight.setSpeed(0);
+      delay(200);
+    }
+   
     
-    JsonObject ultrasonico2 = sensores.createNestedObject();
-    ultrasonico2["clave"] = "ult1";
-    ultrasonico2["dato"] = us2.read();
-    Serial.println(us2.read());
-
-    JsonObject sonido = sensores.createNestedObject();
-    sonido["clave"] = "son0";
-    sonido["dato"] = sound1.read();
-    Serial.println(sound1.read());
-
-    JsonObject temperaturasao = sensores.createNestedObject();
-    temperaturasao["clave"] = "tem0";
-    temperaturasao["dato"] = Temperatura(9,0);
-    Serial.println(Temperatura(9,0));
-
-    JsonObject humedadsao = sensores.createNestedObject();
-    humedadsao["clave"] = "hum0";
-    humedadsao["dato"] = Humedad(9,0);
-    Serial.println(Humedad(9,0));
-
-    JsonObject bateria1 = sensores.createNestedObject();
-    bateria1["clave"] = "bat0";
-    bateria1["dato"] = volt1.read();
-    Serial.println(volt1.read());
-
-    JsonObject PIR01 = sensores.createNestedObject();
-    PIR01["clave"] = "pir0";
-    PIR01["dato"] = mov1.read();
-    Serial.println(mov1.read());
-
-    JsonObject PIR02 = sensores.createNestedObject();
-    PIR02["clave"] = "pir1";
-    PIR02["dato"] = mov2.read();
-    Serial.println(mov2.read());
-
-    JsonObject infrarojo01 = sensores.createNestedObject();
-    infrarojo01["clave"] = "ifr0";
-    infrarojo01["dato"] = infrarojo1.read();
-    Serial.println(infrarojo1.read());
-
-    JsonObject infrarojo02 = sensores.createNestedObject();
-    infrarojo02["clave"] = "ifr1";
-    infrarojo02["dato"] = infrarojo2.read();
-    Serial.println(infrarojo2.read());
-
-    JsonObject Sensor_Gas0 = sensores.createNestedObject();
-    Sensor_Gas0["clave"] = "gas0";
-    Sensor_Gas0["dato"] = gas0.read();
-    Serial.println(gas0.read());
-
-    char jsonBuffer[512];
-    serializeJson(doc,jsonBuffer,sizeof(jsonBuffer));
-    Serial.println(jsonBuffer);
-
-    int joyX = analogRead(A0);
-    int joyY = analogRead(A1);
-
+    
     // mapear la entrada del joystick a la velocidad del motor
     int motorLeftSpeed = map(joyY, -5, 755, 33, 115)+23;
     int motorRightSpeed = map(joyY, -5, 755, 33, 115)-9;
     int turningSpeed = map(joyX, 0, 1023, -40, 40);
-    
     motorLeftSpeed += turningSpeed;
     motorRightSpeed -= turningSpeed;
-
     if (motorLeftSpeed >= 100){
       motorLeftSpeed = 99;
     }
@@ -172,6 +185,8 @@ void loop() {
     
     delay(500);
 
+    }
+    
 
     //Envio de datos
     //Sensores, cambiar por datos necesarios
