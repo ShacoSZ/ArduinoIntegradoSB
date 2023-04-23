@@ -12,14 +12,12 @@ int Sonido::read()
   bool  valor =  digitalRead(pin) ; //leemos el estado del sensor
   if ( valor == true ) //Si está activada la salida D0
   {
-    Serial.println("Hay ruido");
     int respuesta = 1;
     return respuesta;
     delay (1000);
   }
   else
   {
-    Serial.println("No hay ruido");
     int respuesta = 0;
     return respuesta;
     delay(1000);
