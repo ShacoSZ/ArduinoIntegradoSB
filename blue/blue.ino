@@ -1,8 +1,39 @@
+#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
+
+SoftwareSerial BTSerial(11, 10); // RX, TX
+vexMotor motorLeft(3); // pinPWM del motor izquierdo
+vexMotor motorRight(5); // pinPWM del motor derecho
+int joyX, joyY; // valores de entrada del joystick
+int prevJoyX = 0, prevJoyY = 0; // valores anteriores del joystick
 
 
-    // Realizar triangulación con las balizas
-    //float distancia1 = calcularDistancia(carritoX, carritoY, baliza1X, baliza1Y);
-    //float distancia2 = calcularDistancia(carritoX, carritoY, baliza2X, baliza2Y);
-    //float distancia3 = calcularDistancia(carritoX, carritoY, baliza3X, baliza3Y);
-    //float x = trilateracionX(distancia1, distancia2, distancia3, baliza1X, baliza2X, baliza3X);
-    //float y = trilateracionY(distancia1, distancia2, distancia3, baliza1Y, baliza2Y, baliza3Y);
+void setup() {
+    BTSerial.flush();
+    delay(500);
+    BTSerial.begin(38400); 
+    Serial.begin(9600);
+    Serial.println("Iniciando Torre ... ");
+    delay(100);
+    motorLeft.setup();
+    motorRight.setup();
+
+}
+
+void loop(){
+    int joyX = analogRead(A0);
+    int joyY = analogRead(A1);
+    Serial.print("x: ");
+    Serial.println(joyX);
+    Serial.print("y: ");
+    Serial.println(joyY);
+    if (joyX != prevJoyX || joyY != prevJoyY) {
+        BTSerial.print("X:");
+        BTSerial.print(joyX);
+        BTSerial.print(",Y:");
+        BTSerial.println(joyY);
+        prevJoyX = joyX;
+        prevJoyY = joyY;
+    }
+
+}

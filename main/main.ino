@@ -2,13 +2,11 @@
 #include <ArduinoJson.h>
 #include "SensorInfrarojo.h"
 #include "Sonido.h"
-//#include "voltaje.h"
-//#include "vexMotor.h"
+#include "vexMotor.h"
 #include <DHT.h>
 #include "Distancia.h"
 #include "pir.h"
 #include "voltajesensor.h"
-//#include "temperatura.h"
 #include "Gas.h"
 
 /************* Sensor Gas ***************/
@@ -39,6 +37,11 @@
   voltajesensor volt1 = voltajesensor(A8,0);
   const int numero_volt = 1;
 
+
+/************ Voltaje_Sensor ****************/  
+  voltajesensor volt2 = voltajesensor(A9,0);
+  const int numero_volt2 = 1;
+
 /************** Ultrasonico **************/
   Distancia us1 = Distancia(22, 23, 0);
   const int numeroUS1 = 1; 
@@ -52,63 +55,197 @@
 StaticJsonDocument<200> doc;
 JsonArray sensores = doc.to<JsonArray>();
 
-void setup() {
-  Serial.begin(9600);
+SoftwareSerial BTSerial(11, 10); // RX, TX
+int carritoX, carritoY;
 
-  //HM10.begin(9600);
+vexMotor motorLeft(3); // pinPWM del motor izquierdo
+vexMotor motorRight(5); // pinPWM del motor derecho
+
+void setup() {
+  BTSerial.flush();
+  delay(500);
+  BTSerial.begin(38400); 
+  Serial.begin(9600);
+  Serial.println("Iniciando ... ");
+  delay(100);
+  motorLeft.setup();
+  motorRight.setup();
+
 }
 
 void loop() {
-      //Logica de sensores
-      JsonObject ultrasonico1 = sensores.createNestedObject();
-      ultrasonico1["clave"] = "Ult0";
-      ultrasonico1["dato"] = us1.read();
-      
-      JsonObject ultrasonico2 = sensores.createNestedObject();
-      ultrasonico2["clave"] = "Ult1";
-      ultrasonico2["dato"] = us2.read();
+    String receivedData = ""; // variable para almacenar la cadena recibida
+    int joyX, joyY; // variables para almacenar los valores de joyX y joyY
 
-      JsonObject sonido = sensores.createNestedObject();
-      sonido["clave"] = "Son0";
-      sonido["dato"] = sound1.read();
+    if (BTSerial.available()) { // verifica si hay valoress disponibles en la conexión Bluetooth
+      receivedData = BTSerial.readString(); // lee la cadena de caracteres enviada por el maestro
+      // extrae los valores de joyX y joyY de la cadena recibida
+      joyX = receivedData.substring(receivedData.indexOf(":")+1, receivedData.indexOf(",")).toInt();
+      joyY = receivedData.substring(receivedData.lastIndexOf(":")+1, receivedData.length()-1).toInt();
+      Serial.print("X: ");
+      Serial.print(joyX);
+      Serial.print(" Y: ");
+      Serial.println(joyY);
 
-      JsonObject temperaturasao = sensores.createNestedObject();
-      temperaturasao["clave"] = "Tem0";
-      temperaturasao["dato"] = Temperatura(9,0);
-//
-      JsonObject humedadsao = sensores.createNestedObject();
-      humedadsao["clave"] = "Hum0";
-      humedadsao["dato"] = Humedad(9,0);
-//
-      JsonObject bateria1 = sensores.createNestedObject();
-      bateria1["clave"] = "Bat0";
-      bateria1["dato"] = volt1.read();
-//
-      JsonObject PIR01 = sensores.createNestedObject();
-      PIR01["clave"] = "Pir0";
-      PIR01["dato"] = mov1.read();
-//
-      JsonObject PIR02 = sensores.createNestedObject();
-      PIR02["clave"] = "Pir1";
-      PIR02["dato"] = mov2.read();
-//
-      //JsonObject infrarojo01 = sensores.createNestedObject();
-      //infrarojo01["clave"] = "Ifr0";
-      //infrarojo01["dato"] = infrarojo1.read();
-//
-      //JsonObject infrarojo02 = sensores.createNestedObject();
-      //infrarojo02["clave"] = "Ifr1";
-      //infrarojo02["dato"] = infrarojo2.read();
-//
-      JsonObject Sensor_Gas0 = sensores.createNestedObject();
-      Sensor_Gas0["clave"] = "Gas0";
-      Sensor_Gas0["dato"] = gas0.read();
+      motores(joyX, joyY);
+    }
+    else{
+      Serial.println("No hay datos");
+      //sensores();
+    }
 
-      char jsonBuffer[512];
-      serializeJson(doc,jsonBuffer,sizeof(jsonBuffer));
-      Serial.println(jsonBuffer);
       
 }
+void motores(int x, int y){
+  int joyX = x;
+  int joyY = y;
+  if ((us1.read() < 10 && us2.read() < 10)||(infrarojo1.read() < 1 && infrarojo2.read() < 1))//se regresa poco
+    {
+      motorLeft.setSpeed(0);
+      motorRight.setSpeed(0);
+      delay(200);
+    }
+    else if (us1.read() < 10 || infrarojo1.read() == 1) //se regresa atras con el lado del sensor con mas potencia que el otro
+    {
+      motorLeft.setSpeed(0);
+      motorRight.setSpeed(0);
+      delay(200);
+
+    }
+    else if (us2.read() < 10 || infrarojo2.read() == 1) //gira al otor
+    {
+      motorLeft.setSpeed(0);
+      motorRight.setSpeed(0);
+      delay(200);
+    }
+    // mapear la entrada del joystick a la velocidad del motor
+    int motorLeftSpeed = map(joyY, -5, 755, 33, 115)+23;
+    int motorRightSpeed = map(joyY, -5, 755, 33, 115)-9;
+    int turningSpeed = map(joyX, 0, 1023, -40, 40);
+    motorLeftSpeed += turningSpeed;
+    motorRightSpeed -= turningSpeed;
+    if (motorLeftSpeed >= 100){
+      motorLeftSpeed = 99;
+    }
+    if (motorRightSpeed >= 100){
+      motorRightSpeed = 99;
+    }
+    if (motorLeftSpeed < 33){
+      motorLeftSpeed = 33;
+    }
+    if (motorRightSpeed < 33){
+      motorRightSpeed = 33;
+    }
+    motorLeft.setSpeed(motorLeftSpeed);
+    motorRight.setSpeed(motorRightSpeed);
+
+}
+
+void sensores(){
+  //Logica de sensores
+    JsonObject ultrasonico1;
+    ultrasonico1["clave"] = "Ult0";
+    float data = us1.read();
+    if (data > 0){
+      ultrasonico1["valores"] = data;
+    }
+    else{
+      ultrasonico1["valores"] = 0;
+    }
+    ultrasonico1["valores"] = data;
+    char jsonBuffer[512];
+    serializeJson(ultrasonico1, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+    
+    JsonObject ultrasonico2;
+    ultrasonico2["clave"] = "Ult1";
+    float data2 = us2.read();
+    if (data2 > 0){
+      ultrasonico2["valores"] = data2;
+    }
+    else{
+      ultrasonico2["valores"] = 0;
+    }
+    char jsonBuffer[512];
+    serializeJson(ultrasonico2, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+
+    JsonObject sonido;
+    sonido["clave"] = "Son0";
+    sonido["valores"] = sound1.read();
+    char jsonBuffer[512];
+    serializeJson(sonido, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+
+    JsonObject temperaturasao;
+    temperaturasao["clave"] = "Tem0";
+    temperaturasao["valores"] = Temperatura(9,0);
+    char jsonBuffer[512];
+    serializeJson(temperaturasao, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+
+    JsonObject humedadsao;
+    humedadsao["clave"] = "Hum0";
+    humedadsao["valores"] = Humedad(9,0);
+    char jsonBuffer[512];
+    serializeJson(humedadsao, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+
+    JsonObject bateria1;
+    bateria1["clave"] = "Bat0";
+    bateria1["valores"] = volt1.read();
+    char jsonBuffer[512];
+    serializeJson(bateria1, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+    JsonObject bateria2;
+    bateria1["clave"] = "Bat1";
+    bateria1["valores"] = volt1.read();
+    char jsonBuffer[512];
+    serializeJson(bateria1, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+
+    JsonObject PIR01;
+    PIR01["clave"] = "Pir0";
+    PIR01["valores"] = mov1.read();
+    char jsonBuffer[512];
+    serializeJson(PIR01, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+    JsonObject PIR02;
+    PIR02["clave"] = "Pir1";
+    PIR02["valores"] = mov2.read();
+    char jsonBuffer[512];
+    serializeJson(PIR02, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+    JsonObject infrarojo01;
+    infrarojo01["clave"] = "Ifr0";
+    infrarojo01["valores"] = infrarojo1.read();
+    char jsonBuffer[512];
+    serializeJson(infrarojo01, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+    JsonObject infrarojo02;
+    infrarojo02["clave"] = "Ifr1";
+    infrarojo02["valores"] = infrarojo2.read();
+    char jsonBuffer[512];
+    serializeJson(infrarojo02, jsonBuffer, sizeof(jsonBuffer));
+    BTSerial.print(jsonBuffer);
+
+    JsonObject Sensor_Gas0;
+    Sensor_Gas0["clave"] = "Gas0";
+    Sensor_Gas0["valores"] = gas0.read();
+    char jsonBuffer
+
+
+}
+
 
 int Temperatura(int _pin, int _numero) {
   int pin = _pin;
