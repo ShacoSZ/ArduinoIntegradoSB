@@ -42,6 +42,7 @@
   voltajesensor volt2 = voltajesensor(A9,0);
   const int numero_volt2 = 1;
 
+
 /************** Ultrasonico **************/
   Distancia us1 = Distancia(22, 23, 0);
   const int numeroUS1 = 1; 
@@ -50,23 +51,23 @@
   Distancia us2 = Distancia(24, 25, 0);
   const int numeroUS2 = 1;   
 
-
-
-StaticJsonDocument<200> doc;
-JsonArray sensores = doc.to<JsonArray>();
-
 SoftwareSerial BTSerial(11, 10); // RX, TX
 int carritoX, carritoY;
-
-vexMotor motorLeft(3); // pinPWM del motor izquierdo
-vexMotor motorRight(5); // pinPWM del motor derecho
-
+int count = 0;
+vexMotor motorLeft(38); // pinPWM del motor izquierdo
+vexMotor motorRight(39); // pinPWM del motor derecho
+String data; // variable para almacenar los datos recibidos
+int x  = 509, y = 504; // variables para almacenar los valores x e y
+int aux;
+int prevX = 0;
+int prevY = 0;
 void setup() {
   BTSerial.flush();
   delay(500);
   BTSerial.begin(38400); 
   Serial.begin(9600);
-  Serial.println("Iniciando ... ");
+  Serial.println("Iniciando Carrito... ");
+    BTSerial.print("Hola torre");
   delay(100);
   motorLeft.setup();
   motorRight.setup();
@@ -74,175 +75,107 @@ void setup() {
 }
 
 void loop() {
-    String receivedData = ""; // variable para almacenar la cadena recibida
-    int joyX, joyY; // variables para almacenar los valores de joyX y joyY
-
-    if (BTSerial.available()) { // verifica si hay valoress disponibles en la conexión Bluetooth
-      receivedData = BTSerial.readString(); // lee la cadena de caracteres enviada por el maestro
-      // extrae los valores de joyX y joyY de la cadena recibida
-      joyX = receivedData.substring(receivedData.indexOf(":")+1, receivedData.indexOf(",")).toInt();
-      joyY = receivedData.substring(receivedData.lastIndexOf(":")+1, receivedData.length()-1).toInt();
-      Serial.print("X: ");
-      Serial.print(joyX);
-      Serial.print(" Y: ");
-      Serial.println(joyY);
-
-      motores(joyX, joyY);
+  while(BTSerial.available())    // Si llega un dato por el puerto BT se envía al monitor serial
+  {
+    data = BTSerial.readStringUntil('\n');
+    // busca la posición de la coma en la cadena
+    int commaPos = data.indexOf(',');
+    if (commaPos != -1) { // si se encuentra la coma
+    // obtiene la subcadena antes de la coma y la convierte a un entero
+    x = data.substring(0, commaPos).toInt();
+    // obtiene la subcadena después de la coma y la convierte a un entero
+    y = data.substring(commaPos + 1).toInt();
+    // imprime los valores de x e y en la consola serial
+    Serial.print("x = ");
+    Serial.print(x);
+    Serial.print(", y = ");
+    Serial.println(y);
+    motores(x, y);
+    aux = 0;  
+  }
+  }
+    aux+=1;
+    delay(500);
+    if (aux==4){
+      aux = 0;
+      if ((x > 505 && x < 513)&&(y > 501 && y < 509)) {
+      sensores();
+      }
     }
-    else{
-      Serial.println("No hay datos");
-      //sensores();
-    }
-
-      
+    
 }
+
+String JsonSensor(String clave, float valores) {
+  DynamicJsonDocument doc(1024);
+  doc["clave"] = clave;
+  doc["valores"]   = valores;
+  String output;
+  serializeJson(doc, output);
+  return output;
+}
+
 void motores(int x, int y){
-  int joyX = x;
-  int joyY = y;
-  if ((us1.read() < 10 && us2.read() < 10)||(infrarojo1.read() < 1 && infrarojo2.read() < 1))//se regresa poco
-    {
-      motorLeft.setSpeed(0);
-      motorRight.setSpeed(0);
-      delay(200);
-    }
-    else if (us1.read() < 10 || infrarojo1.read() == 1) //se regresa atras con el lado del sensor con mas potencia que el otro
-    {
-      motorLeft.setSpeed(0);
-      motorRight.setSpeed(0);
-      delay(200);
+  int joyXx = x;
+  int joyYx = y;
 
-    }
-    else if (us2.read() < 10 || infrarojo2.read() == 1) //gira al otor
-    {
-      motorLeft.setSpeed(0);
-      motorRight.setSpeed(0);
-      delay(200);
-    }
-    // mapear la entrada del joystick a la velocidad del motor
-    int motorLeftSpeed = map(joyY, -5, 755, 33, 115)+23;
-    int motorRightSpeed = map(joyY, -5, 755, 33, 115)-9;
-    int turningSpeed = map(joyX, 0, 1023, -40, 40);
-    motorLeftSpeed += turningSpeed;
-    motorRightSpeed -= turningSpeed;
-    if (motorLeftSpeed >= 100){
-      motorLeftSpeed = 99;
-    }
-    if (motorRightSpeed >= 100){
-      motorRightSpeed = 99;
-    }
-    if (motorLeftSpeed < 33){
-      motorLeftSpeed = 33;
-    }
-    if (motorRightSpeed < 33){
-      motorRightSpeed = 33;
-    }
-    motorLeft.setSpeed(motorLeftSpeed);
-    motorRight.setSpeed(motorRightSpeed);
+  // mapear la entrada del joystick a la velocidad del motor
+  int motorLeftSpeed = map(joyYx, 0, 1025, 33, 115)+23;
+  int motorRightSpeed = map(joyYx,  0, 1025, 33, 115)-9;
+  int turningSpeed = map(joyXx, 0, 1023, -40, 40);
+  motorLeftSpeed += turningSpeed;
+  motorRightSpeed -= turningSpeed;
+  if (motorLeftSpeed >= 100){
+    motorLeftSpeed = 99;
+  }
+  if (motorRightSpeed >= 100){
+    motorRightSpeed = 99;
+  }
+  if (motorLeftSpeed < 33){
+    motorLeftSpeed = 33;
+  }
+  if (motorRightSpeed < 33){
+    motorRightSpeed = 33;
+  }
+  motorLeft.setSpeed(motorLeftSpeed);
+  motorRight.setSpeed(motorRightSpeed);
 
 }
+
+float antSon = 0, antBat1, antBat2, antUlt1, antUlt2, antHum, antTem, antGas, antIfr1,antIfr2, antPir1,antPir2;
 
 void sensores(){
   //Logica de sensores
-    JsonObject ultrasonico1;
-    ultrasonico1["clave"] = "Ult0";
-    float data = us1.read();
-    if (data > 0){
-      ultrasonico1["valores"] = data;
-    }
-    else{
-      ultrasonico1["valores"] = 0;
-    }
-    ultrasonico1["valores"] = data;
-    char jsonBuffer[512];
-    serializeJson(ultrasonico1, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-    
-    JsonObject ultrasonico2;
-    ultrasonico2["clave"] = "Ult1";
-    float data2 = us2.read();
-    if (data2 > 0){
-      ultrasonico2["valores"] = data2;
-    }
-    else{
-      ultrasonico2["valores"] = 0;
-    }
-    char jsonBuffer[512];
-    serializeJson(ultrasonico2, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
+  float ult1 = us1.read();
+  if (ult1 > 0){
+    Serial.println(JsonSensor("Ult0",ult1));
+  }
+
+  float ult2 = us2.read();
+  if (ult2 > 0){
+    Serial.println(JsonSensor("Ult1",ult2));
+  }
+  float Son = sound1.read();
+  if (Son != antSon){
+    Serial.println(JsonSensor("Son0",Son));
+    antSon = Son;
+  }
+
+  float Tem = Temperatura(9,0);
+  if (Tem != antTem){
+    Serial.println(JsonSensor("Tem0",Tem));
+    antTem=Tem
+  }
 
 
-    JsonObject sonido;
-    sonido["clave"] = "Son0";
-    sonido["valores"] = sound1.read();
-    char jsonBuffer[512];
-    serializeJson(sonido, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-
-    JsonObject temperaturasao;
-    temperaturasao["clave"] = "Tem0";
-    temperaturasao["valores"] = Temperatura(9,0);
-    char jsonBuffer[512];
-    serializeJson(temperaturasao, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-
-    JsonObject humedadsao;
-    humedadsao["clave"] = "Hum0";
-    humedadsao["valores"] = Humedad(9,0);
-    char jsonBuffer[512];
-    serializeJson(humedadsao, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-
-    JsonObject bateria1;
-    bateria1["clave"] = "Bat0";
-    bateria1["valores"] = volt1.read();
-    char jsonBuffer[512];
-    serializeJson(bateria1, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-    JsonObject bateria2;
-    bateria1["clave"] = "Bat1";
-    bateria1["valores"] = volt1.read();
-    char jsonBuffer[512];
-    serializeJson(bateria1, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-
-    JsonObject PIR01;
-    PIR01["clave"] = "Pir0";
-    PIR01["valores"] = mov1.read();
-    char jsonBuffer[512];
-    serializeJson(PIR01, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-    JsonObject PIR02;
-    PIR02["clave"] = "Pir1";
-    PIR02["valores"] = mov2.read();
-    char jsonBuffer[512];
-    serializeJson(PIR02, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-    JsonObject infrarojo01;
-    infrarojo01["clave"] = "Ifr0";
-    infrarojo01["valores"] = infrarojo1.read();
-    char jsonBuffer[512];
-    serializeJson(infrarojo01, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-    JsonObject infrarojo02;
-    infrarojo02["clave"] = "Ifr1";
-    infrarojo02["valores"] = infrarojo2.read();
-    char jsonBuffer[512];
-    serializeJson(infrarojo02, jsonBuffer, sizeof(jsonBuffer));
-    BTSerial.print(jsonBuffer);
-
-    JsonObject Sensor_Gas0;
-    Sensor_Gas0["clave"] = "Gas0";
-    Sensor_Gas0["valores"] = gas0.read();
-    char jsonBuffer
-
+  Serial.println(JsonSensor("Hum0",Humedad(9,0)));
+  
+  Serial.println(JsonSensor("Bat0",volt1.read()));
+  Serial.println(JsonSensor("Bat1",volt2.read()));
+  Serial.println(JsonSensor("Pir0",mov1.read()));
+  Serial.println(JsonSensor("Pir1",mov2.read()));
+  Serial.println(JsonSensor("Ifr0",infrarojo1.read()));
+  Serial.println(JsonSensor("Ifr1",infrarojo2.read()));
+  Serial.println(JsonSensor("Gas0", gas0.read()));
 
 }
 

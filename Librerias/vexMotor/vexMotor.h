@@ -8,6 +8,9 @@ class vexMotor {
 
   public:
     vexMotor(int pinPWM);
+    void setup();
     void setSpeed(int speed);
 };
 
+
+#endif
