@@ -14,7 +14,7 @@
   const int numero_gas0 = 1;
 
 /************* Sensor Sonido **************/
-  Sonido sound1 = Sonido(6,0);
+  Sonido sound1 = Sonido(A15,0);
   const int numero_sound = 1;
 
 /************* Sensor Infrarojo IZQ **************/
