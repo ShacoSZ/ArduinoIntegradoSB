@@ -10,7 +10,7 @@ int Sonido::read()
 {
   respuesta = analogRead(pin) ;
   return respuesta;
-  delay(200);
+  delay(1000);
 }
 
 void Sonido::show()
