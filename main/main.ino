@@ -163,7 +163,7 @@ void sensores(){
   float Tem = Temperatura(9,0);
   if (Tem != antTem){
     Serial.println(JsonSensor("Tem0",Tem));
-    antTem=Tem
+    antTem=Tem;
   }
 
   float Hum = Humedad(9,0);
@@ -198,11 +198,14 @@ void sensores(){
   if (Ifr0 != antIfr1){
     Serial.println(JsonSensor("Ifr0",Ifr0));
     antIfr1=Ifr0;
+    delay(800);
   }
   float Ifr1 = infrarojo2.read();
   if (Ifr1 != antIfr2){
     Serial.println(JsonSensor("Ifr1",Ifr1));
     antIfr2=Ifr1;
+    delay(800);
+    Serial.println(JsonSensor("Ifr1",0));
   }
   float Gas0 = gas0.read();
   if (Gas0 != antGas){
