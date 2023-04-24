@@ -166,16 +166,49 @@ void sensores(){
     antTem=Tem
   }
 
+  float Hum = Humedad(9,0);
+  if (Hum != antHum){
+    Serial.println(JsonSensor("Hum0",Hum));
+    antHum=Hum;
+  }
 
-  Serial.println(JsonSensor("Hum0",Humedad(9,0)));
-  
-  Serial.println(JsonSensor("Bat0",volt1.read()));
-  Serial.println(JsonSensor("Bat1",volt2.read()));
-  Serial.println(JsonSensor("Pir0",mov1.read()));
-  Serial.println(JsonSensor("Pir1",mov2.read()));
-  Serial.println(JsonSensor("Ifr0",infrarojo1.read()));
-  Serial.println(JsonSensor("Ifr1",infrarojo2.read()));
-  Serial.println(JsonSensor("Gas0", gas0.read()));
+  float Bat0 = volt1.read();
+  if (Bat0 != antBat1){
+    Serial.println(JsonSensor("Bat0",Bat0));
+    antBat1=Bat0;
+  }
+
+  float Bat1 = volt2.read();
+  if (Bat1 != antBat2){
+    Serial.println(JsonSensor("Bat1",Bat1));
+    antBat2=Bat1;
+  }
+
+  float Pir0 = mov1.read();
+  if (Pir0 != antPir1){
+    Serial.println(JsonSensor("Pir0",Pir0));
+    antPir1=Pir0;
+  }
+  float Pir1 = mov2.read();
+  if (Pir1 != antPir2){
+    Serial.println(JsonSensor("Pir1",Pir1));
+    antPir2=Pir1;
+  }
+  float Ifr0 = infrarojo1.read();
+  if (Ifr0 != antIfr1){
+    Serial.println(JsonSensor("Ifr0",Ifr0));
+    antIfr1=Ifr0;
+  }
+  float Ifr1 = infrarojo2.read();
+  if (Ifr1 != antIfr2){
+    Serial.println(JsonSensor("Ifr1",Ifr1));
+    antIfr2=Ifr1;
+  }
+  float Gas0 = gas0.read();
+  if (Gas0 != antGas){
+    Serial.println(JsonSensor("Gas0",Gas0));
+    antGas=Gas0;
+  }
 
 }
 
